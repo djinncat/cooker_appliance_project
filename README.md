@@ -5,23 +5,24 @@ Below is the full documentation submitted to the university for grading (just a 
 
 ************************************************************************
 
-# ELE2303 - Assessment 3
+## ELE2303 - Assessment 3
 
-# Mixer-Cooker Appliance
+## Mixer-Cooker Appliance
 
-# Stage 2
+## Stage 2
 
 Student Name: Kate Bowater
+
 Student Number: U1019160
 
  
-# Introduction
+## Introduction
 This report details the software design and implementation of Stage 2 of the Mixer-Cooker Appliance (MCA). State-based programming has been used to develop the code for this stage to meet functional requirements. The design includes a user interface that allows the user to use the four push buttons to choose a cooking program from soup, bread, and rice. The buttons also allow the user to make choices at certain steps within those cooking programs.
 The LCD is used throughout the program to provide prompts to the user and display information relevant to the current step in the program. It will also display the sensor values for mass, temperature, and humidity as required. If hazardous conditions are present, the program will be halted and cannot be resumed, and an error message will display relevant to this event.
 
 The program is designed to automate cooking when user input is not required. An interrupt service routine is set up to be used for accurate timing intervals, creating a 10 ms program loop with counters used to create longer delays as required. This creates non-blocking code so the program runs continuously, allowing it to retrieve data to update the LCD with information and to change states when needed.
 
-# State-Based Program Description
+## State-Based Program Description
 The main program first performs an initialisation routine which goes through a set of subroutines to:
 
 	-set the internal oscillation frequency to 32 MHz
@@ -54,7 +55,7 @@ As part of the operational requirements, the code is written so the user can pre
 Upon completion of any cooking program, the code enters a Finished state to indicate to the user that cooking is finished. Any button pressed here will take the program back to Standby.
 The Error state is the only state that has no transition out; this is a safety feature and will only occur if the mass is below 100 grams or the humidity is lower than 50% during cooking for 1 minute as this indicates hazardous cooking conditions. If the program enters this state, an error message displays on the LCD and the buzzer is turned on by sending a high signal to pin RC1 which will generate noise to alert the user. The user must then turn off the cooker and start again.
 
-# New Routine Implementation
+## New Routine Implementation
 
 As mentioned, the buzzer is required to generate an audible tone in the Error state, and this feature is connected to Port C pin RC1. As the heater was connected to this pin in Stage 1, it will be moved to pin RC6 for Stage 2. The buzzer can be set to active via a switch on the PICSimLab board and will then produce noise when there is high output to the pin. 
 
@@ -62,7 +63,7 @@ A subroutine for controlling the heater is a new implementation. This is called 
 
 The heater interrupt from Stage 1 is also renamed timer_interrupt as this interrupt is no longer needed for the heater specifically. This is now a general ISR where all timing counters are contained.
 
-# Software Testing Analysis
+## Software Testing Analysis
 The testing procedure for the program used the debugging feature on MPLAB X and simulation on PICSimLab. Potentiometers via the spare parts option was used in PICSimLab to simulate the mass, temperature, and humidity sensors. While the program is running, the pin viewer was used to check the high/low states of the pins for the heater and lid sensor. For the lid lock, the Relay 1 LED can be observed; it will turn on when the lid is locked. For time-based requirements, the values for counters are greatly reduced for testing and a stopwatch used to evaluate accuracy.
 
 The following steps outline the testing procedure used during development. The results of final testing were recorded in Table 1:
@@ -107,7 +108,7 @@ Requirement:
 
 Notes: To view the PWM on the oscilloscope of PICSimLab, the time base required is 0.1 ms/div.
 
-# Testing Discussion
+### Testing Discussion
 During testing in the earlier stages of program development, it was found that some states in the switch-case transitioned too quickly - i.e., when Go/Select or Stop/Back is pressed, the state would transition to the next without pause. It was suspected this was due to the speed the program was running, which meant after a transition via a button press the next state would transition while the button is still pressed, causing a premature transition. For example, pressing Select while in the Choice state would transition to the Soup state, but the same button would also cause transition to the state after that, thus essentially skipping the Soup state. This problem also occurred in states that required a choice to be made using the Up or Down buttons; pressing the button would cause the choices to scroll too quickly.
 
 To address this, a variable x is used in the problematic parts of the code to cause the program to loop again, giving time for the user to release or press a different button in time for the program to return the new button value from buttonstate().
