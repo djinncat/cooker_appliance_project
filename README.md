@@ -1,7 +1,7 @@
 # cooker_appliance_project
 Hi! This code was written as part of an assignment for a hypothetical cooker appliance. Written and tested using MPLABX and simulated using PICSimLab for proof of function.
 The appliance entailed several automated cooking programs and was designed to interface with various components such as weight, temperature and humidity sensors.
-Below is the full documentation submitted to the university for grading (just an unformatted copy paste job here).
+Below is the full documentation submitted to the university for grading (just a semi unformatted copy paste job here).
 
 ************************************************************************
 
@@ -18,10 +18,12 @@ Student Number: U1019160
 1. Introduction
 This report details the software design and implementation of Stage 2 of the Mixer-Cooker Appliance (MCA). State-based programming has been used to develop the code for this stage to meet functional requirements. The design includes a user interface that allows the user to use the four push buttons to choose a cooking program from soup, bread, and rice. The buttons also allow the user to make choices at certain steps within those cooking programs.
 The LCD is used throughout the program to provide prompts to the user and display information relevant to the current step in the program. It will also display the sensor values for mass, temperature, and humidity as required. If hazardous conditions are present, the program will be halted and cannot be resumed, and an error message will display relevant to this event.
+
 The program is designed to automate cooking when user input is not required. An interrupt service routine is set up to be used for accurate timing intervals, creating a 10 ms program loop with counters used to create longer delays as required. This creates non-blocking code so the program runs continuously, allowing it to retrieve data to update the LCD with information and to change states when needed.
 
-2. State-Based Program Description
+3. State-Based Program Description
 The main program first performs an initialisation routine which goes through a set of subroutines to:
+
 	-set the internal oscillation frequency to 32 MHz
 	-set Ports D and C to output , Ports A and B for input
 	-enables analog-digital conversion for pins RA0-3
@@ -30,6 +32,7 @@ The main program first performs an initialisation routine which goes through a s
 	-set up interrupt service routine (ISR)
 
 The 10 ms loop timing for the program is generated using timer 1 and CCP2. The value set in the CCP2 register to cause the program to run at 10 ms is calculated using equation 1:
+
 Period=10ms÷1/(32MHz/4*1/8)=10000	(1)
 
 This calculation uses the timer prescaler 1:8. The period of 10000 provided to the CCP register will cause the program to loop every 10 ms. The ISR is then used to increment counters necessary for timing throughout the cooking program.
@@ -50,6 +53,7 @@ As part of the operational requirements, the code is written so the user can pre
 
 Upon completion of any cooking program, the code enters a Finished state to indicate to the user that cooking is finished. Any button pressed here will take the program back to Standby.
 The Error state is the only state that has no transition out; this is a safety feature and will only occur if the mass is below 100 grams or the humidity is lower than 50% during cooking for 1 minute as this indicates hazardous cooking conditions. If the program enters this state, an error message displays on the LCD and the buzzer is turned on by sending a high signal to pin RC1 which will generate noise to alert the user. The user must then turn off the cooker and start again.
+
 3. New Routine Implementation
 
 As mentioned, the buzzer is required to generate an audible tone in the Error state, and this feature is connected to Port C pin RC1. As the heater was connected to this pin in Stage 1, it will be moved to pin RC6 for Stage 2. The buzzer can be set to active via a switch on the PICSimLab board and will then produce noise when there is high output to the pin. 
@@ -62,6 +66,7 @@ The heater interrupt from Stage 1 is also renamed timer_interrupt as this interr
 The testing procedure for the program used the debugging feature on MPLAB X and simulation on PICSimLab. Potentiometers via the spare parts option was used in PICSimLab to simulate the mass, temperature, and humidity sensors. While the program is running, the pin viewer was used to check the high/low states of the pins for the heater and lid sensor. For the lid lock, the Relay 1 LED can be observed; it will turn on when the lid is locked. For time-based requirements, the values for counters are greatly reduced for testing and a stopwatch used to evaluate accuracy.
 
 The following steps outline the testing procedure used during development. The results of final testing were recorded in Table 1:
+
 	-Run cooking program start through finish, mimicking user operation
 	-Potentiometers used to alter sensor values as needed
 	-Run through multiple times to test different pathways forward
@@ -85,6 +90,7 @@ Button functionality	Pressing Stop/Back will pause the program at any state; pre
 Timers	Accurate timings throughout cooking programs (shortened from specification timing)		
 Sensor Values	The scaling and values from sensors display accurately		
 PWM	The PWM duty cycles can be differentiated on the oscilloscope (speed can also be evaluated by checking the Cooler bar or fan on the PICSimLab board)		
+
 Notes: To view the PWM on the oscilloscope of PICSimLab, the time base required is 0.1 ms/div.
 
 4.2 Testing Discussion
@@ -96,5 +102,6 @@ It should also be noted that the display of mass, temperature, and humidity to t
 To check the 10 ms loop time based on CCP, a temporary line was written into the ISR for LATC = LATC + 1. Then using the oscilloscope on PICSimLab, the 10 ms interval could be viewed on pin RC0 as seen in Figure 1.
  
 Figure 1: demonstration of 10 ms intervals
+
 No other issues were found during final testing of the code.
  
